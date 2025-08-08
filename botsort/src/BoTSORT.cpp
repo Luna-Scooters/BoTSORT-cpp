@@ -50,7 +50,7 @@ T fetch_config(const Config<T> &config,
 BoTSORT::BoTSORT(const Config<TrackerParams> &tracker_config,
                  const Config<GMC_Params> &gmc_config,
                  const Config<ReIDParams> &reid_config,
-                 const std::string &reid_onnx_model_path)
+                 const std::shared_ptr<ReIDModel> &reid_model)
 {
     auto tracker_params = fetch_config<TrackerParams>(
             tracker_config, TrackerParams::load_config);
@@ -65,13 +65,11 @@ BoTSORT::BoTSORT(const Config<TrackerParams> &tracker_config,
 
 
     // Re-ID module, load visual feature extractor here
-    if (_reid_enabled && not_empty(reid_config) &&
-        reid_onnx_model_path.size() > 0)
+    if (_reid_enabled && not_empty(reid_config) && reid_model)
     {
         auto reid_params =
                 fetch_config<ReIDParams>(reid_config, ReIDParams::load_config);
-        _reid_model =
-                std::make_unique<ReIDModel>(reid_params, reid_onnx_model_path);
+        _reid_model = reid_model;
     }
     else
     {
@@ -118,12 +116,18 @@ BoTSORT::track(const std::vector<Detection> &detections, const cv::Mat &frame)
         {
             detection.bbox_tlwh.x = std::max(0.0f, detection.bbox_tlwh.x);
             detection.bbox_tlwh.y = std::max(0.0f, detection.bbox_tlwh.y);
-            detection.bbox_tlwh.width =
-                    std::min(static_cast<float>(frame.cols - 1),
-                             detection.bbox_tlwh.width);
-            detection.bbox_tlwh.height =
-                    std::min(static_cast<float>(frame.rows - 1),
-                             detection.bbox_tlwh.height);
+            // detection.bbox_tlwh.width = std::min(static_cast<float>(frame.cols - 1), detection.bbox_tlwh.width);
+            // detection.bbox_tlwh.height = std::min(static_cast<float>(frame.rows - 1), detection.bbox_tlwh.height);
+            float corrected_x2 =
+                    detection.bbox_tlwh.x + detection.bbox_tlwh.width;
+            float corrected_y2 =
+                    detection.bbox_tlwh.y + detection.bbox_tlwh.height;
+            corrected_x2 =
+                    std::min(static_cast<float>(frame.cols - 1), corrected_x2);
+            corrected_y2 =
+                    std::min(static_cast<float>(frame.rows - 1), corrected_y2);
+            detection.bbox_tlwh.width = corrected_x2 - detection.bbox_tlwh.x;
+            detection.bbox_tlwh.height = corrected_y2 - detection.bbox_tlwh.y;
 
             std::shared_ptr<Track> tracklet;
             std::vector<float> tlwh = {

@@ -19,7 +19,7 @@ public:
     explicit BoTSORT(const Config<TrackerParams> &tracker_config,
                      const Config<GMC_Params> &gmc_config = {},
                      const Config<ReIDParams> &reid_config = {},
-                     const std::string &reid_onnx_model_path = "");
+                     const std::shared_ptr<ReIDModel> &reid_model = nullptr);
 
     ~BoTSORT() = default;
 
@@ -106,5 +106,5 @@ private:
 
     std::unique_ptr<KalmanFilter> _kalman_filter;
     std::unique_ptr<GlobalMotionCompensation> _gmc_algo;
-    std::unique_ptr<ReIDModel> _reid_model;
+    std::shared_ptr<ReIDModel> _reid_model;
 };

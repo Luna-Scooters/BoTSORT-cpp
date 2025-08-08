@@ -1,15 +1,19 @@
 #pragma once
 
 #include <opencv2/core.hpp>
+#include <opencv2/opencv.hpp>
 
 #include "DataType.h"
+#include "IAiAbstraction.h"
 #include "ReIDParams.h"
-#include "TRT_InferenceEngine/TensorRT_InferenceEngine.h"
+// #include "TRT_InferenceEngine/TensorRT_InferenceEngine.h"
 
 class ReIDModel
 {
 public:
-    ReIDModel(const ReIDParams &params, const std::string &onnx_model_path);
+    // ReIDModel(const ReIDParams &params, const std::string &onnx_model_path);
+    ReIDModel(const ReIDParams &params,
+              std::shared_ptr<luna::AIEngine::IAiAbstraction> &model);
     ~ReIDModel() = default;
 
     void pre_process(cv::Mat &image);
@@ -25,9 +29,10 @@ private:
 
 
 private:
-    inference_backend::TRTOptimizerParams _model_optimization_params;
-    std::unique_ptr<inference_backend::TensorRTInferenceEngine>
-            _trt_inference_engine;
+    // inference_backend::TRTOptimizerParams _model_optimization_params;
+    // std::unique_ptr<inference_backend::TensorRTInferenceEngine>
+    //         _trt_inference_engine;
+    std::shared_ptr<luna::AIEngine::IAiAbstraction> _model;
     u_int8_t _trt_logging_level;
     cv::Size _input_size;
 

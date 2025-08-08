@@ -44,10 +44,9 @@ inline float iou(const std::vector<float> &tlwh_a,
     float top = std::max(tlwh_a[1], tlwh_b[1]);
     float right = std::min(tlwh_a[0] + tlwh_a[2], tlwh_b[0] + tlwh_b[2]);
     float bottom = std::min(tlwh_a[1] + tlwh_a[3], tlwh_b[1] + tlwh_b[3]);
-    float area_i =
-            std::max(right - left + 1, 0.0f) * std::max(bottom - top + 1, 0.0f);
-    float area_a = (tlwh_a[2] + 1) * (tlwh_a[3] + 1);
-    float area_b = (tlwh_b[2] + 1) * (tlwh_b[3] + 1);
+    float area_i = std::max(right - left, 0.0f) * std::max(bottom - top, 0.0f);
+    float area_a = (tlwh_a[2]) * (tlwh_a[3]);
+    float area_b = (tlwh_b[2]) * (tlwh_b[3]);
     return area_i / (area_a + area_b - area_i);
 }
 
