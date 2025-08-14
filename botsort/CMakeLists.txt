@@ -1,6 +1,6 @@
 CMAKE_MINIMUM_REQUIRED(VERSION 3.16)
 
-PROJECT(botsort VERSION 1.0 LANGUAGES CXX)
+PROJECT(botsort-lib VERSION 1.0 LANGUAGES CXX)
 
 # Set C++ Standard
 set(CMAKE_CXX_STANDARD 17)
@@ -14,10 +14,10 @@ if(NOT CMAKE_BUILD_TYPE)
 endif()
 
 # Collect all source files
-file(GLOB_RECURSE SOURCES "${PROJECT_SOURCE_DIR}/src/*.cpp")
+file(GLOB SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp")
 
 # Create library
-add_library(${PROJECT_NAME} SHARED ${SOURCES})
+add_library(${PROJECT_NAME} STATIC ${SOURCES})
 
 # Set include directories
 target_include_directories(${PROJECT_NAME} PUBLIC
@@ -25,27 +25,19 @@ target_include_directories(${PROJECT_NAME} PUBLIC
   $<INSTALL_INTERFACE:include>
 )
 
-# Find and link OpenCV
-find_package(OpenCV REQUIRED)
-target_include_directories(${PROJECT_NAME} PUBLIC ${OpenCV_INCLUDE_DIRS})
-target_link_libraries(${PROJECT_NAME} ${OpenCV_LIBS})
+# link OpenCV
+target_link_libraries(${PROJECT_NAME} PUBLIC opencv-lib)
 
-# Find and link Eigen3
-find_package(Eigen3 REQUIRED)
-target_include_directories(${PROJECT_NAME} PUBLIC ${EIGEN3_INCLUDE_DIR})
-target_link_libraries(${PROJECT_NAME} Eigen3::Eigen)
+# link Eigen3
+target_link_libraries(${PROJECT_NAME} PUBLIC eigen3-lib)
 
-# Find and link Boost
-find_package(Boost REQUIRED COMPONENTS filesystem)
-target_include_directories(${PROJECT_NAME} PUBLIC ${Boost_INCLUDE_DIRS})
-target_link_libraries(${PROJECT_NAME} ${Boost_LIBRARIES})
+# link AI Abstraction
+target_link_libraries(${PROJECT_NAME} PUBLIC aiabstraction)
 
 # Find and link CUDA
 find_package(CUDA QUIET)
 
-if(NOT ${CUDA_FOUND})
-    message(WARNING "CUDA not found, ReID won't be built")
-else()
+if(${CUDA_FOUND})
     message(STATUS "CUDA version ${CUDA_VERSION_STRING} found")
     target_include_directories(${PROJECT_NAME} PUBLIC ${CUDA_INCLUDE_DIRS})
 
@@ -53,15 +45,4 @@ else()
         ${PROJECT_SOURCE_DIR}/src/TRT_InferenceEngine/TensorRT_InferenceEngine.cpp
         ${PROJECT_SOURCE_DIR}/src/ReID.cpp)
     target_link_libraries(${PROJECT_NAME} ${CUDA_LIBRARIES} nvonnxparser nvinfer)
-endif()
-
-if(CMAKE_BUILD_TYPE MATCHES Debug)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pg")
-    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -pg")
-    set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -pg")
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -O0")
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O0")
-else()
-    add_definitions(-DPROFILE=1)
-    add_compile_options(-O3)
 endif()

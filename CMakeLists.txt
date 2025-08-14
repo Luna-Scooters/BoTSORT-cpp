@@ -4,7 +4,7 @@ CMAKE_MINIMUM_REQUIRED(VERSION 3.16)
 project(botsort_tracker_example VERSION 0.1.0 LANGUAGES CXX)
 
 # Build options
-option(BUILD_EXAMPLES "Build examples" ON)
+option(BUILD_EXAMPLES "Build examples" OFF)
 
 # Set Build Type if not set
 if(NOT CMAKE_BUILD_TYPE)
@@ -25,10 +25,6 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 set(CMAKE_INSTALL_BINDIR bin)
 set(CMAKE_INSTALL_LIBDIR lib)
 set(CMAKE_INSTALL_INCLUDEDIR include)
-
-# Check OpenCV and Eigen3
-find_package(OpenCV REQUIRED)
-find_package(Eigen3 REQUIRED)
 
 # add botsort
 add_subdirectory(botsort)
